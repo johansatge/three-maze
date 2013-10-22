@@ -4,9 +4,9 @@ function threemaze($element)
     // Object attributes
     this.$element =         $element;
     this.camera =           {};
+    this.cameraHelper =     {};
     this.scene =            {};
     this.renderer =         {};
-    this.mouseClicked =     false;
 
     // Events
     this.$element.on('mousemove', $.proxy(this,'onMouseMove'));
@@ -18,7 +18,6 @@ function threemaze($element)
     this.initScene();
     this.initObjects();
     this.onWindowResize();
-    this.updateCamera();
     this.render();
 
     // @todo à refactorer
@@ -59,7 +58,7 @@ threemaze.prototype.initScene = function()
     // Camera
     this.camera =               new THREE.PerspectiveCamera(45, 1, 1, 2000);
     this.camera.angles =        {horizontal: 0, vertical: 0};
-    this.camera.acceleration =  false;
+    this.camera.clicked =       false;
 
     // Lights
     var ambient = new THREE.AmbientLight(0x999999);
@@ -73,17 +72,63 @@ threemaze.prototype.initScene = function()
     var white_material = new THREE.MeshLambertMaterial({color: 0xe3ded0, wireframe: false});
     this.materials = {'atomes': black_material, 'centre': white_material};
 
-    // Renderer
-    if (typeof WebGLRenderingContext != 'undefined' && window.WebGLRenderingContext)
-    {
-        this.renderer = new THREE.WebGLRenderer({antialias: true});
-    }
-    else
-    {
-        this.renderer = new THREE.CanvasRenderer({});
-    }
+    // Camera helper
+    var geometry =  new THREE.Geometry();
+    var material =  new THREE.LineBasicMaterial({color: 0x333333, lineWidth: 1});
+    geometry.vertices.push(new THREE.Vector3(0,0,0), new THREE.Vector3(500,0,0));
+    this.cameraHelper = new THREE.Line(geometry, material);
+    this.scene.add(this.cameraHelper);
+    this.cameraHelper.rotation.z = Math.PI / 5;
 
+    // Renderer
+    this.renderer = typeof WebGLRenderingContext != 'undefined' && window.WebGLRenderingContext ? new THREE.WebGLRenderer({antialias: true}) : new THREE.CanvasRenderer({});
     this.$element.append(this.renderer.domElement);
+};
+
+/**
+ * Moving the mouse over the container
+ * @param evt
+ */
+threemaze.prototype.onMouseMove = function(evt)
+{
+    if (this.camera.clicked !== false)
+    {
+        this.cameraHelper.rotation.y += (this.camera.clicked.x - evt.pageX) / 5000;
+        this.cameraHelper.rotation.z += (evt.pageY - this.camera.clicked.y) / 5000;
+
+        var camera_position = this.cameraHelper.geometry.vertices[1].clone().applyProjection(this.cameraHelper.matrixWorld);
+        this.camera.position = camera_position;
+        this.camera.lookAt(this.scene.position);
+    }
+};
+
+/**
+ * Mouse down: starts dragging the maze
+ * @param evt
+ */
+threemaze.prototype.onMouseDown = function(evt)
+{
+    evt.preventDefault();
+    this.camera.clicked = {x: evt.pageX, y: evt.pageY};
+};
+
+/**
+ * Mouse up: stops dragging the maze
+ * @param evt
+ */
+threemaze.prototype.onMouseUp = function(evt)
+{
+    evt.preventDefault();
+    this.camera.clicked = false;
+};
+
+/**
+ * Render loop
+ */
+threemaze.prototype.render = function()
+{
+    requestAnimationFrame($.proxy(this, 'render'));
+    this.renderer.render(this.scene, this.camera);
 };
 
 /**
@@ -95,58 +140,6 @@ threemaze.prototype.onWindowResize = function()
     this.renderer.setSize($window.width(), $window.height());
     this.camera.aspect = $window.width() / $window.height();
     this.camera.updateProjectionMatrix();
-};
-
-/**
- * Moving the mouse over the container
- * @param evt
- */
-threemaze.prototype.onMouseMove = function(evt)
-{
-    if (this.mouseClicked !== false)
-    {
-        this.camera.acceleration = {horizontal: (evt.pageX - this.mouseClicked.x) / 5000, vertical: (this.mouseClicked.y - evt.pageY) / 5000};
-    }
-};
-
-threemaze.prototype.onMouseDown = function(evt)
-{
-    evt.preventDefault();
-    this.mouseClicked = {x: evt.pageX, y: evt.pageY};
-    this.camera.acceleration = {horizontal: 0, vertical: 0};
-};
-
-threemaze.prototype.onMouseUp = function(evt)
-{
-    evt.preventDefault();
-    this.mouseClicked = false;
-    this.camera.acceleration = false;
-};
-
-/**
- * Render loop
- */
-threemaze.prototype.render = function()
-{
-    requestAnimationFrame($.proxy(this, 'render'));
-    if (this.camera.acceleration !== false)
-    {
-        this.camera.angles.horizontal += this.camera.acceleration.horizontal;
-        this.camera.angles.vertical += this.camera.acceleration.vertical;
-        this.updateCamera();
-    }
-    this.renderer.render(this.scene, this.camera);
-};
-
-/**
- * Updates the camera position if needed
- */
-threemaze.prototype.updateCamera = function()
-{
-    this.camera.position.x = Math.floor(Math.cos(this.camera.angles.horizontal) * 300);
-    this.camera.position.y = Math.floor(Math.cos(this.camera.angles.vertical) * 300);
-    this.camera.position.z = Math.floor(Math.sin(this.camera.angles.horizontal) * 300);
-    this.camera.lookAt(this.scene.position);
 };
 
 /**
