@@ -26,9 +26,6 @@ function threemaze($element)
     this.$element.on('mouseup', $.proxy(this, 'onMouseUp'));
     this.$element.find('.generate').on('click', $.proxy(this, 'onGenerateMaze')).trigger('click');
     $(window).on('resize', $.proxy(this, 'onWindowResize'));
-
-    // @todo à refactorer
-    threeaxis(this.scene, 400);
 };
 
 /**
