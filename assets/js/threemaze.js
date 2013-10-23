@@ -12,7 +12,8 @@ function threemaze($element)
     this.scene =            {};
     this.map =              [];
     this.renderer =         {};
-    this.side =             21;
+    this.player =           {};
+    this.side =             31;
     this.thickness =        20;
 
     // Inits
@@ -26,6 +27,7 @@ function threemaze($element)
     this.$element.on('mouseup', $.proxy(this, 'onMouseUp'));
     this.$element.find('.generate').on('click', $.proxy(this, 'onGenerateMaze')).trigger('click');
     $(window).on('resize', $.proxy(this, 'onWindowResize'));
+    $(document).on('keydown', $.proxy(this, 'onKeyDown'));
 };
 
 /**
@@ -39,7 +41,7 @@ threemaze.prototype.onGenerateMaze = function()
     var target_hide_properties =    {scale: 0, y: 0};
     var delay =                     0;
     var self =                      this;
-    for (var x = 1; x < this.side + 1; x += 1)
+    for (var x = this.side; x > 0; x -= 1)
     {
         for (var y = 1;y < this.side + 1; y += 1)
         {
@@ -95,6 +97,7 @@ threemaze.prototype.onGenerateMaze = function()
         delay += 50;
     }
     this.map = new_map;
+    this.initPlayer();
 };
 
 /**
@@ -116,6 +119,17 @@ threemaze.prototype.initScene = function()
     directional.position.set(0, 0.5, 1);
     this.scene.add(directional);
 
+    // Player
+    this.player =           new THREE.Object3D();
+    var player_material =   new THREE.LineBasicMaterial({color: 0xcb4e4e, lineWidth: 1});
+    var head_mesh =         new THREE.Mesh(new THREE.SphereGeometry(this.thickness / 2, 9, 9), player_material);
+    var body_mesh =         new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 2, this.thickness * 1.5, 12, 1), player_material);
+    this.player.add(head_mesh);
+    this.player.add(body_mesh);
+    head_mesh.position.y = this.thickness * 1.5;
+    body_mesh.position.y = this.thickness / 2;
+    this.scene.add(this.player);
+
     // Camera helper
     var geometry =  new THREE.Geometry();
     var material =  new THREE.LineBasicMaterial({color: 0x333333, lineWidth: 1});
@@ -125,12 +139,66 @@ threemaze.prototype.initScene = function()
     this.cameraHelper.visible =         false;
     this.cameraHelper.targetRotation =  false;
     this.cameraHelper.rotation.x =      0;
-    this.cameraHelper.rotation.y =      0.38639;
-    this.cameraHelper.rotation.z =      0.648339;
+    this.cameraHelper.rotation.y =      1.362275;
+    this.cameraHelper.rotation.z =      0.694716;
 
     // Renderer
     this.renderer = typeof WebGLRenderingContext != 'undefined' && window.WebGLRenderingContext ? new THREE.WebGLRenderer({antialias: true}) : new THREE.CanvasRenderer({});
     this.$element.append(this.renderer.domElement);
+};
+
+/**
+ * Inits the player
+ * @todo move the player back to origin when generating a new maze
+ */
+threemaze.prototype.initPlayer = function()
+{
+    this.player.mazePosition = {x: this.side - 1, z: this.side - 1};
+    this.movePlayer();
+};
+
+/**
+ * Keydown action
+ * @param evt
+ */
+threemaze.prototype.onKeyDown = function(evt)
+{
+    var code = evt.keyCode;
+
+    var direction = {x: 0, z: 0};
+    if (code == 37)
+    {
+        direction.x = 1;
+    }
+    if (code == 39)
+    {
+        direction.x = -1;
+    }
+    if (code == 38)
+    {
+        direction.z = 1;
+    }
+    if (code == 40)
+    {
+        direction.z = -1;
+    }
+
+    var target_block = this.map[this.player.mazePosition.x + direction.x][this.player.mazePosition.z + direction.z];
+    if (target_block === false)
+    {
+        this.player.mazePosition.x += direction.x;
+        this.player.mazePosition.z += direction.z;
+        this.movePlayer();
+    }
+};
+
+/**
+ * Moves the player depending on its position on the maze
+ */
+threemaze.prototype.movePlayer = function()
+{
+    this.player.position.x = -((this.side * this.thickness) / 2) + this.player.mazePosition.x * this.thickness;
+    this.player.position.z = -((this.side * this.thickness) / 2) + this.player.mazePosition.z * this.thickness;
 };
 
 /**
