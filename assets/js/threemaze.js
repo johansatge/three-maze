@@ -10,45 +10,58 @@ function threemaze($element)
     this.camera =           {};
     this.cameraHelper =     {};
     this.scene =            {};
+    this.map =              [];
     this.renderer =         {};
     this.side =             21;
     this.thickness =        20;
+
+    // Inits
+    this.initScene();
+    this.onWindowResize();
+    this.render();
 
     // Events
     this.$element.on('mousemove', $.proxy(this,'onMouseMove'));
     this.$element.on('mousedown', $.proxy(this, 'onMouseDown'));
     this.$element.on('mouseup', $.proxy(this, 'onMouseUp'));
+    this.$element.find('.generate').on('click', $.proxy(this, 'onGenerateMaze')).trigger('click');
     $(window).on('resize', $.proxy(this, 'onWindowResize'));
-
-    // Inits
-    this.initScene();
-    this.initObjects();
-    this.onWindowResize();
-    this.render();
 
     // @todo à refactorer
     threeaxis(this.scene, 400);
 };
 
 /**
- * Inits objects
+ * Generates a new maze
  */
-threemaze.prototype.initObjects = function()
+threemaze.prototype.onGenerateMaze = function()
 {
-    var map = this.generateMaze(this.side);
+    var new_map = this.generateMaze(this.side);
     for (var x = 1; x < this.side + 1; x += 1)
     {
         for (var y = 1;y < this.side + 1; y += 1)
         {
-            if (map[x][y] == 0)
+            // Removes old meshes
+            if (typeof this.map[x] != 'undefined' && typeof this.map[x][y] != 'undefined' && typeof this.map[x][y] == 'object')
             {
-                var wall_geometry =     new THREE.CubeGeometry(this.thickness, this.thickness, this.thickness, 1, 1, 1);
-                var wall_mesh =         new THREE.Mesh(wall_geometry, new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false}));
-                wall_mesh.position.set(x * this.thickness - ((this.side * this.thickness) / 2), this.thickness / 2, y * 20 - ((this.side * this.thickness) / 2));
-                this.scene.add(wall_mesh);
+                this.scene.remove(this.map[x][y]);
+            }
+
+            // Adds a new mesh if needed
+            if (new_map[x][y] == 0)
+            {
+                var wall_geometry =   new THREE.CubeGeometry(this.thickness, this.thickness, this.thickness, 1, 1, 1);
+                new_map[x][y] =      new THREE.Mesh(wall_geometry, new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false}));
+                new_map[x][y].position.set(x * this.thickness - ((this.side * this.thickness) / 2), this.thickness / 2, y * 20 - ((this.side * this.thickness) / 2));
+                this.scene.add(new_map[x][y]);
+            }
+            else
+            {
+                new_map[x][y] = false;
             }
         }
     }
+    this.map = new_map;
 };
 
 /**
