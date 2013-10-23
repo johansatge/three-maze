@@ -33,33 +33,69 @@ function threemaze($element)
 
 /**
  * Generates a new maze
+ * Loops into the maze, removes old blocks and adds new ones
  */
 threemaze.prototype.onGenerateMaze = function()
 {
-    var new_map = this.generateMaze(this.side);
+    var new_map =                   this.generateMaze(this.side);
+    var target_show_properties =    {scale: 1, y: this.thickness / 2};
+    var target_hide_properties =    {scale: 0, y: 0};
+    var delay =                     0;
+    var self =                      this;
     for (var x = 1; x < this.side + 1; x += 1)
     {
         for (var y = 1;y < this.side + 1; y += 1)
         {
-            // Removes old meshes
+            // Removes old mesh if needed
             if (typeof this.map[x] != 'undefined' && typeof this.map[x][y] != 'undefined' && typeof this.map[x][y] == 'object')
             {
-                this.scene.remove(this.map[x][y]);
+                // Builds the related tween
+                this.map[x][y].current_properties = {scale: 1, y: this.thickness / 2, mesh: this.map[x][y]};
+                var tween = new TWEEN.Tween(this.map[x][y].current_properties).to(target_hide_properties, 200).delay(delay);
+                tween.onUpdate(function()
+                {
+                    this.mesh.scale.y =     this.scale;
+                    this.mesh.position.y =  this.y;
+                });
+                tween.onComplete(function()
+                {
+                    this.mesh.visible = false;
+                    self.scene.remove(this.mesh);
+                });
+                tween.start();
             }
 
             // Adds a new mesh if needed
             if (new_map[x][y] == 0)
             {
-                var wall_geometry =   new THREE.CubeGeometry(this.thickness, this.thickness, this.thickness, 1, 1, 1);
-                new_map[x][y] =      new THREE.Mesh(wall_geometry, new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false}));
-                new_map[x][y].position.set(x * this.thickness - ((this.side * this.thickness) / 2), this.thickness / 2, y * 20 - ((this.side * this.thickness) / 2));
+                // Generates the mesh
+                var wall_geometry =     new THREE.CubeGeometry(this.thickness, this.thickness, this.thickness, 1, 1, 1);
+                new_map[x][y] =         new THREE.Mesh(wall_geometry, new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false}));
+                new_map[x][y].scale.y = 0;
+                new_map[x][y].visible = false;
+                new_map[x][y].position.set(x * this.thickness - ((this.side * this.thickness) / 2), 0, y * 20 - ((this.side * this.thickness) / 2));
                 this.scene.add(new_map[x][y]);
+
+                // Builds the related tween
+                new_map[x][y].current_properties = {scale: 0, y: 0, mesh: new_map[x][y]};
+                var tween = new TWEEN.Tween(new_map[x][y].current_properties).to(target_show_properties, 200).delay(delay);
+                tween.onUpdate(function()
+                {
+                    this.mesh.scale.y =     this.scale;
+                    this.mesh.position.y =  this.y;
+                });
+                tween.onStart(function()
+                {
+                    this.mesh.visible = true;
+                });
+                tween.start();
             }
             else
             {
                 new_map[x][y] = false;
             }
         }
+        delay += 50;
     }
     this.map = new_map;
 };
@@ -150,6 +186,7 @@ threemaze.prototype.onMouseUp = function(evt)
 threemaze.prototype.render = function()
 {
     requestAnimationFrame($.proxy(this, 'render'));
+    TWEEN.update();
     if (this.cameraHelper.targetRotation !== false)
     {
         this.cameraHelper.rotation.z += (this.cameraHelper.targetRotation.z - this.cameraHelper.rotation.z) / 10;

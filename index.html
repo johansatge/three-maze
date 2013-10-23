@@ -19,7 +19,10 @@
         <script type="text/javascript" src="assets/js/threemaze.generate.js"></script>
         <script type="text/javascript" src="assets/js/tween.min.js"></script>
         <script type="text/javascript">
-            var contraption = new threemaze($('.three').first());
+            jQuery(window).load(function()
+            {
+                var contraption = new threemaze($('.three').first());
+            });
         </script>
 	</body>
 </html>
