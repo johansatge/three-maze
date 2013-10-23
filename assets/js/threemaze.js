@@ -76,8 +76,11 @@ threemaze.prototype.initScene = function()
     geometry.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.sqrt(3) * (this.side * this.thickness)), 0, 0);
     this.cameraHelper = new THREE.Line(geometry, material);
     this.scene.add(this.cameraHelper);
-    this.cameraHelper.visible = false;
-    this.cameraHelper.targetRotation = false;
+    this.cameraHelper.visible =         false;
+    this.cameraHelper.targetRotation =  false;
+    this.cameraHelper.rotation.x =      0;
+    this.cameraHelper.rotation.y =      0.38639;
+    this.cameraHelper.rotation.z =      0.648339;
 
     // Renderer
     this.renderer = typeof WebGLRenderingContext != 'undefined' && window.WebGLRenderingContext ? new THREE.WebGLRenderer({antialias: true}) : new THREE.CanvasRenderer({});
@@ -138,10 +141,10 @@ threemaze.prototype.render = function()
     {
         this.cameraHelper.rotation.z += (this.cameraHelper.targetRotation.z - this.cameraHelper.rotation.z) / 10;
         this.cameraHelper.rotation.y += (this.cameraHelper.targetRotation.y - this.cameraHelper.rotation.y) / 10;
-        var camera_position = this.cameraHelper.geometry.vertices[1].clone().applyProjection(this.cameraHelper.matrixWorld);
-        this.camera.position = camera_position;
-        this.camera.lookAt(this.scene.position);
     }
+    var camera_position = this.cameraHelper.geometry.vertices[1].clone().applyProjection(this.cameraHelper.matrixWorld);
+    this.camera.position = camera_position;
+    this.camera.lookAt(this.scene.position);
     this.renderer.render(this.scene, this.camera);
 };
 
