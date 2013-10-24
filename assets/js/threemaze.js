@@ -39,25 +39,25 @@ function threemaze($element)
 threemaze.prototype.onGenerateMaze = function()
 {
     var new_map =                   this.generateMaze(this.side);
-    this.player.path =              [];
+    var new_player_path =           [];
     var target_show_properties =    {scale: 1, y: this.thickness / 2};
     var target_hide_properties =    {scale: 0, y: 0};
+    var target_path_hide =          {scale: 0, y: this.thickness * 5};
     var delay =                     0;
     var self =                      this;
     for (var x = this.side; x > 0; x -= 1)
     {
-        this.player.path[x] = [];
+        new_player_path[x] = [];
         for (var y = 1;y < this.side + 1; y += 1)
         {
             // Inits player path
-            this.player.path[x][y] = false;
+            new_player_path[x][y] = false;
 
             // Removes old mesh if needed
             if (typeof this.map[x] != 'undefined' && typeof this.map[x][y] != 'undefined' && typeof this.map[x][y] == 'object')
             {
                 // Builds the related tween
-                this.map[x][y].current_properties = {scale: 1, y: this.thickness / 2, mesh: this.map[x][y]};
-                var tween = new TWEEN.Tween(this.map[x][y].current_properties).to(target_hide_properties, 200).delay(delay);
+                var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 2, mesh: this.map[x][y]}).to(target_hide_properties, 200).delay(delay);
                 tween.onUpdate(function()
                 {
                     this.mesh.scale.y =     this.scale;
@@ -66,6 +66,23 @@ threemaze.prototype.onGenerateMaze = function()
                 tween.onComplete(function()
                 {
                     this.mesh.visible = false;
+                    self.scene.remove(this.mesh);
+                });
+                tween.start();
+            }
+
+            // Removes player path if needed
+            if (typeof this.player.path != 'undefined' && typeof this.player.path[x] != 'undefined' && typeof this.player.path[x][y] != 'undefined' && typeof this.player.path[x][y] == 'object')
+            {
+                // Builds the related tween
+                var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 8, mesh: this.player.path[x][y]}).to(target_path_hide, 200).delay(delay);
+                tween.onUpdate(function()
+                {
+                    this.mesh.scale.set(this.scale, this.scale, this.scale);
+                    this.mesh.position.y =  this.y;
+                });
+                tween.onComplete(function()
+                {
                     self.scene.remove(this.mesh);
                 });
                 tween.start();
@@ -103,6 +120,7 @@ threemaze.prototype.onGenerateMaze = function()
         delay += 50;
     }
     this.map = new_map;
+    this.player.path = new_player_path;
     this.initPlayer();
 };
 
