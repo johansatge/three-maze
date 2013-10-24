@@ -14,6 +14,7 @@ function threemaze($element)
     this.map =              [];
     this.renderer =         {};
     this.player =           {};
+    this.end =              {};
     this.side =             31;
     this.thickness =        20;
 
@@ -146,15 +147,24 @@ threemaze.prototype.initScene = function()
     this.scene.add(directional);
 
     // Player
-    this.player =           new THREE.Object3D();
-    var player_material =   this.materials.red;
-    var head_mesh =         new THREE.Mesh(new THREE.SphereGeometry(this.thickness / 2, 9, 9), player_material);
-    var body_mesh =         new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 2, this.thickness * 1.5, 12, 1), player_material);
+    this.player =      new THREE.Object3D();
+    var head_mesh =    new THREE.Mesh(new THREE.SphereGeometry(this.thickness / 2, 9, 9), this.materials.red);
+    var body_mesh =    new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 2, this.thickness * 1.5, 12, 1), this.materials.red);
     this.player.add(head_mesh);
     this.player.add(body_mesh);
     head_mesh.position.y = this.thickness * 1.5;
     body_mesh.position.y = this.thickness;
     this.scene.add(this.player);
+
+    // End of the maze
+    this.end =              new THREE.Object3D();
+    var arrow_mesh =        new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 2, 0, this.thickness / 2, 12, 1), this.materials.red);
+    var line_mesh =         new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 6, this.thickness, 8, 1), this.materials.red);
+    line_mesh.position.y =  this.thickness / 2;
+    this.end.add(arrow_mesh);
+    this.end.add(line_mesh);
+    this.end.position.set(-((this.side / 2) * this.thickness) + (this.thickness * 2), this.thickness * 2, -((this.side / 2) * this.thickness) + (this.thickness * 2));
+    this.scene.add(this.end);
 
     // Camera helper
     var geometry =  new THREE.Geometry();
