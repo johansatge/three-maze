@@ -22,6 +22,7 @@ function threemaze($element)
     this.render();
 
     // Events
+    // @todo disable events when generating a maze
     this.$element.on('mousemove', $.proxy(this,'onMouseMove'));
     this.$element.on('mousedown', $.proxy(this, 'onMouseDown'));
     this.$element.on('mouseup', $.proxy(this, 'onMouseUp'));
@@ -37,14 +38,19 @@ function threemaze($element)
 threemaze.prototype.onGenerateMaze = function()
 {
     var new_map =                   this.generateMaze(this.side);
+    this.player.path =              [];
     var target_show_properties =    {scale: 1, y: this.thickness / 2};
     var target_hide_properties =    {scale: 0, y: 0};
     var delay =                     0;
     var self =                      this;
     for (var x = this.side; x > 0; x -= 1)
     {
+        this.player.path[x] = [];
         for (var y = 1;y < this.side + 1; y += 1)
         {
+            // Inits player path
+            this.player.path[x][y] = false;
+
             // Removes old mesh if needed
             if (typeof this.map[x] != 'undefined' && typeof this.map[x][y] != 'undefined' && typeof this.map[x][y] == 'object')
             {
@@ -120,14 +126,14 @@ threemaze.prototype.initScene = function()
     this.scene.add(directional);
 
     // Player
-    this.player =           new THREE.Object3D();
-    var player_material =   new THREE.LineBasicMaterial({color: 0xcb4e4e, lineWidth: 1});
-    var head_mesh =         new THREE.Mesh(new THREE.SphereGeometry(this.thickness / 2, 9, 9), player_material);
-    var body_mesh =         new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 2, this.thickness * 1.5, 12, 1), player_material);
+    this.player =                   new THREE.Object3D();
+    var player_material =           new THREE.LineBasicMaterial({color: 0xcb4e4e, lineWidth: 1});
+    var head_mesh =                 new THREE.Mesh(new THREE.SphereGeometry(this.thickness / 2, 9, 9), player_material);
+    var body_mesh =                 new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 2, this.thickness * 1.5, 12, 1), player_material);
     this.player.add(head_mesh);
     this.player.add(body_mesh);
     head_mesh.position.y = this.thickness * 1.5;
-    body_mesh.position.y = this.thickness / 2;
+    body_mesh.position.y = this.thickness;
     this.scene.add(this.player);
 
     // Camera helper
@@ -163,31 +169,44 @@ threemaze.prototype.initPlayer = function()
  */
 threemaze.prototype.onKeyDown = function(evt)
 {
+    // Gets the direction depending on the pressed key
     var code = evt.keyCode;
-
     var direction = {x: 0, z: 0};
-    if (code == 37)
+    var directions =
     {
-        direction.x = 1;
-    }
-    if (code == 39)
+        37: {x: 1, z: 0},
+        39: {x: -1, z: 0},
+        38: {x: 0, z: 1},
+        40: {x: 0, z: -1}
+    };
+    if (typeof directions[code] != 'undefined')
     {
-        direction.x = -1;
-    }
-    if (code == 38)
-    {
-        direction.z = 1;
-    }
-    if (code == 40)
-    {
-        direction.z = -1;
+        direction = directions[code];
     }
 
-    var target_block = this.map[this.player.mazePosition.x + direction.x][this.player.mazePosition.z + direction.z];
+    var x = this.player.mazePosition.x;
+    var z = this.player.mazePosition.z;
+    var target_block = this.map[x + direction.x][z + direction.z];
     if (target_block === false)
     {
+        // If the player moves forward, adds a block to the path
+        if (this.player.path[x + direction.x][z + direction.z] === false)
+        {
+            this.player.path[x][z] = new THREE.Mesh(new THREE.CubeGeometry(this.thickness, this.thickness / 4, this.thickness, 1, 1, 1),  new THREE.LineBasicMaterial({color: 0xcb4e4e, lineWidth: 1}));
+            this.player.path[x][z].position.set(this.player.position.x, this.thickness / 8, this.player.position.z);
+            this.scene.add(this.player.path[x][z]);
+        }
+        // If he goes back, removes one
+        else
+        {
+            this.scene.remove(this.player.path[x + direction.x][z + direction.z]);
+            this.player.path[x + direction.x][z + direction.z] = false;
+        }
+
+        // Updates player position
         this.player.mazePosition.x += direction.x;
         this.player.mazePosition.z += direction.z;
+
         this.movePlayer();
     }
 };
