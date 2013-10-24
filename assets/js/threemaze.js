@@ -10,6 +10,7 @@ function threemaze($element)
     this.camera =           {};
     this.cameraHelper =     {};
     this.scene =            {};
+    this.materials =        {};
     this.map =              [];
     this.renderer =         {};
     this.player =           {};
@@ -75,15 +76,14 @@ threemaze.prototype.onGenerateMaze = function()
             {
                 // Generates the mesh
                 var wall_geometry =     new THREE.CubeGeometry(this.thickness, this.thickness, this.thickness, 1, 1, 1);
-                new_map[x][y] =         new THREE.Mesh(wall_geometry, new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false}));
+                new_map[x][y] =         new THREE.Mesh(wall_geometry, this.materials.grey);
                 new_map[x][y].scale.y = 0;
                 new_map[x][y].visible = false;
                 new_map[x][y].position.set(x * this.thickness - ((this.side * this.thickness) / 2), 0, y * 20 - ((this.side * this.thickness) / 2));
                 this.scene.add(new_map[x][y]);
 
                 // Builds the related tween
-                new_map[x][y].current_properties = {scale: 0, y: 0, mesh: new_map[x][y]};
-                var tween = new TWEEN.Tween(new_map[x][y].current_properties).to(target_show_properties, 200).delay(delay);
+                var tween = new TWEEN.Tween({scale: 0, y: 0, mesh: new_map[x][y]}).to(target_show_properties, 200).delay(delay);
                 tween.onUpdate(function()
                 {
                     this.mesh.scale.y =     this.scale;
@@ -114,6 +114,13 @@ threemaze.prototype.initScene = function()
     // Scene
     this.scene = new THREE.Scene();
 
+    // Materials
+    this.materials =
+    {
+        grey:   new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false}),
+        red:    new THREE.LineBasicMaterial({color: 0xcb4e4e, lineWidth: 1})
+    };
+
     // Camera
     this.camera =            new THREE.PerspectiveCamera(45, 1, 1, 2000);
     this.camera.angles =     {horizontal: 0, vertical: 0};
@@ -127,7 +134,7 @@ threemaze.prototype.initScene = function()
 
     // Player
     this.player =                   new THREE.Object3D();
-    var player_material =           new THREE.LineBasicMaterial({color: 0xcb4e4e, lineWidth: 1});
+    var player_material =           this.materials.red;
     var head_mesh =                 new THREE.Mesh(new THREE.SphereGeometry(this.thickness / 2, 9, 9), player_material);
     var body_mesh =                 new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 2, this.thickness * 1.5, 12, 1), player_material);
     this.player.add(head_mesh);
@@ -138,9 +145,8 @@ threemaze.prototype.initScene = function()
 
     // Camera helper
     var geometry =  new THREE.Geometry();
-    var material =  new THREE.LineBasicMaterial({color: 0x333333, lineWidth: 1});
     geometry.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.sqrt(3) * (this.side * this.thickness)), 0, 0);
-    this.cameraHelper = new THREE.Line(geometry, material);
+    this.cameraHelper = new THREE.Line(geometry);
     this.scene.add(this.cameraHelper);
     this.cameraHelper.visible =         false;
     this.cameraHelper.targetRotation =  false;
@@ -192,9 +198,21 @@ threemaze.prototype.onKeyDown = function(evt)
         // If the player moves forward, adds a block to the path
         if (this.player.path[x + direction.x][z + direction.z] === false)
         {
-            this.player.path[x][z] = new THREE.Mesh(new THREE.CubeGeometry(this.thickness, this.thickness / 4, this.thickness, 1, 1, 1),  new THREE.LineBasicMaterial({color: 0xcb4e4e, lineWidth: 1}));
-            this.player.path[x][z].position.set(this.player.position.x, this.thickness / 8, this.player.position.z);
+            // Builds the mesh
+            this.player.path[x][z] = new THREE.Mesh(new THREE.CubeGeometry(this.thickness, this.thickness / 4, this.thickness, 1, 1, 1),  this.materials.red);
+            this.player.path[x][z].position.set(this.player.position.x, this.thickness * 5, this.player.position.z);
+            this.player.path[x][z].scale.set(0, 0, 0);
             this.scene.add(this.player.path[x][z]);
+
+            // Builds the related tween
+            var target_properties = {scale: 1, y: this.thickness / 8};
+            var tween =             new TWEEN.Tween({scale: 0, y: this.thickness * 5, mesh: this.player.path[x][z]}).to(target_properties, 400);
+            tween.onUpdate(function()
+            {
+                this.mesh.scale.set(this.scale, this.scale, this.scale);
+                this.mesh.position.y =  this.y;
+            });
+            tween.start();
         }
         // If he goes back, removes one
         else
@@ -203,7 +221,7 @@ threemaze.prototype.onKeyDown = function(evt)
             this.player.path[x + direction.x][z + direction.z] = false;
         }
 
-        // Updates player position
+        // Updates the player position
         this.player.mazePosition.x += direction.x;
         this.player.mazePosition.z += direction.z;
 

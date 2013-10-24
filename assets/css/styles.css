@@ -41,11 +41,11 @@ button {
 }
 
 button:hover {
-    top: 21px;
+    top: 31px;
     box-shadow: 0 4px #a53d3a;
 }
 
 button:active {
-    top: 23px;
+    top: 33px;
     box-shadow: 0 2px #a53d3a;
 }
