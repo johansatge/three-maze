@@ -23,7 +23,6 @@ function threemaze($element)
     this.render();
 
     // Events
-    // @todo disable events when generating a maze
     this.$element.on('mousemove', $.proxy(this,'onMouseMove'));
     this.$element.on('mousedown', $.proxy(this, 'onMouseDown'));
     this.$element.on('mouseup', $.proxy(this, 'onMouseUp'));
@@ -38,13 +37,10 @@ function threemaze($element)
  */
 threemaze.prototype.onGenerateMaze = function()
 {
-    var new_map =                   this.generateMaze(this.side);
-    var new_player_path =           [];
-    var target_show_properties =    {scale: 1, y: this.thickness / 2};
-    var target_hide_properties =    {scale: 0, y: 0};
-    var target_path_hide =          {scale: 0, y: this.thickness * 5};
-    var delay =                     0;
-    var self =                      this;
+    var new_map =           this.generateMaze(this.side);
+    var new_player_path =   [];
+    var delay =             0;
+    var self =              this;
     for (var x = this.side; x > 0; x -= 1)
     {
         new_player_path[x] = [];
@@ -56,8 +52,7 @@ threemaze.prototype.onGenerateMaze = function()
             // Removes old mesh if needed
             if (typeof this.map[x] != 'undefined' && typeof this.map[x][y] != 'undefined' && typeof this.map[x][y] == 'object')
             {
-                // Builds the related tween
-                var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 2, mesh: this.map[x][y]}).to(target_hide_properties, 200).delay(delay);
+                var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 2, mesh: this.map[x][y]}).to({scale: 0, y: 0}, 200).delay(delay);
                 tween.onUpdate(function()
                 {
                     this.mesh.scale.y =     this.scale;
@@ -75,7 +70,7 @@ threemaze.prototype.onGenerateMaze = function()
             if (typeof this.player.path != 'undefined' && typeof this.player.path[x] != 'undefined' && typeof this.player.path[x][y] != 'undefined' && typeof this.player.path[x][y] == 'object')
             {
                 // Builds the related tween
-                var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 8, mesh: this.player.path[x][y]}).to(target_path_hide, 200).delay(delay);
+                var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 8, mesh: this.player.path[x][y]}).to({scale: 0, y: this.thickness * 5}, 300).delay(delay);
                 tween.onUpdate(function()
                 {
                     this.mesh.scale.set(this.scale, this.scale, this.scale);
@@ -100,7 +95,7 @@ threemaze.prototype.onGenerateMaze = function()
                 this.scene.add(new_map[x][y]);
 
                 // Builds the related tween
-                var tween = new TWEEN.Tween({scale: 0, y: 0, mesh: new_map[x][y]}).to(target_show_properties, 200).delay(delay);
+                var tween = new TWEEN.Tween({scale: 0, y: 0, mesh: new_map[x][y]}).to({scale: 1, y: this.thickness / 2}, 300).delay(delay);
                 tween.onUpdate(function()
                 {
                     this.mesh.scale.y =     this.scale;
@@ -151,10 +146,10 @@ threemaze.prototype.initScene = function()
     this.scene.add(directional);
 
     // Player
-    this.player =                   new THREE.Object3D();
-    var player_material =           this.materials.red;
-    var head_mesh =                 new THREE.Mesh(new THREE.SphereGeometry(this.thickness / 2, 9, 9), player_material);
-    var body_mesh =                 new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 2, this.thickness * 1.5, 12, 1), player_material);
+    this.player =           new THREE.Object3D();
+    var player_material =   this.materials.red;
+    var head_mesh =         new THREE.Mesh(new THREE.SphereGeometry(this.thickness / 2, 9, 9), player_material);
+    var body_mesh =         new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 2, this.thickness * 1.5, 12, 1), player_material);
     this.player.add(head_mesh);
     this.player.add(body_mesh);
     head_mesh.position.y = this.thickness * 1.5;
@@ -194,7 +189,7 @@ threemaze.prototype.initPlayer = function()
 threemaze.prototype.onKeyDown = function(evt)
 {
     // Gets the direction depending on the pressed key
-    var code = evt.keyCode;
+    var code =      evt.keyCode;
     var direction = {x: 0, z: 0};
     var directions =
     {
@@ -218,13 +213,12 @@ threemaze.prototype.onKeyDown = function(evt)
         {
             // Builds the mesh
             this.player.path[x][z] = new THREE.Mesh(new THREE.CubeGeometry(this.thickness, this.thickness / 4, this.thickness, 1, 1, 1),  this.materials.red);
-            this.player.path[x][z].position.set(this.player.position.x, this.thickness * 5, this.player.position.z);
+            this.player.path[x][z].position.set(-((this.side * this.thickness) / 2) + x * this.thickness, this.thickness * 5, -((this.side * this.thickness) / 2) + z * this.thickness);
             this.player.path[x][z].scale.set(0, 0, 0);
             this.scene.add(this.player.path[x][z]);
 
             // Builds the related tween
-            var target_properties = {scale: 1, y: this.thickness / 8};
-            var tween =             new TWEEN.Tween({scale: 0, y: this.thickness * 5, mesh: this.player.path[x][z]}).to(target_properties, 400);
+            var tween = new TWEEN.Tween({scale: 0, y: this.thickness * 5, mesh: this.player.path[x][z]}).to({scale: 1, y: this.thickness / 8}, 300).delay(150);
             tween.onUpdate(function()
             {
                 this.mesh.scale.set(this.scale, this.scale, this.scale);
@@ -252,8 +246,17 @@ threemaze.prototype.onKeyDown = function(evt)
  */
 threemaze.prototype.movePlayer = function()
 {
-    this.player.position.x = -((this.side * this.thickness) / 2) + this.player.mazePosition.x * this.thickness;
-    this.player.position.z = -((this.side * this.thickness) / 2) + this.player.mazePosition.z * this.thickness;
+    var from =  {height: -Math.PI, x: this.player.position.x, z: this.player.position.z, mesh: this.player};
+    var to =    {height: Math.PI,x: -((this.side * this.thickness) / 2) + this.player.mazePosition.x * this.thickness, z: -((this.side * this.thickness) / 2) + this.player.mazePosition.z * this.thickness}
+    var tween = new TWEEN.Tween(from).to(to, 300);
+    var self =  this;
+    tween.onUpdate(function()
+    {
+        this.mesh.position.x = this.x;
+        this.mesh.position.y = (Math.cos(this.height) + 1) * (self.thickness / 4);
+        this.mesh.position.z = this.z;
+    });
+    tween.start();
 };
 
 /**
