@@ -171,8 +171,6 @@ threemaze.prototype.initScene = function()
     // Scene
     this.scene = new THREE.Scene();
 
-    this.scene.add(new THREE.GridHelper(1600, this.thickness));
-
     // Materials
     this.materials =
     {
