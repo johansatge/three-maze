@@ -40,13 +40,14 @@ threemaze.prototype.onGenerateMaze = function()
 {
     var new_map =           this.generateMaze(this.side);
     var new_player_path =   [];
-    var delay =             0;
+    var latency =           50;
     var self =              this;
     for (var x = this.side; x > 0; x -= 1)
     {
         new_player_path[x] = [];
         for (var y = 1;y < this.side + 1; y += 1)
         {
+            var delay = ((this.side - x) * latency) + ((this.side - y) * latency);
             // Inits player path
             new_player_path[x][y] = false;
 
@@ -94,12 +95,11 @@ threemaze.prototype.onGenerateMaze = function()
                 new_map[x][y] = false;
             }
         }
-        delay += 50;
     }
 
     // Animates the end block
     var end_hide_tween = new TWEEN.Tween({scale: 1, y: this.thickness / 2, mesh: this.end}).to({scale: 0, y: 0}, 300);
-    var end_show_tween = new TWEEN.Tween({scale: 0, y: 0, mesh: this.end}).to({scale: 1, y: this.thickness / 2}, 300).delay(delay);
+    var end_show_tween = new TWEEN.Tween({scale: 0, y: 0, mesh: this.end}).to({scale: 1, y: this.thickness / 2}, 300).delay((this.side * 2) * latency);
     end_hide_tween.onUpdate(this.onUpdateTweeningMesh);
     end_show_tween.onUpdate(this.onUpdateTweeningMesh);
     end_show_tween.onStart(function()
@@ -170,6 +170,8 @@ threemaze.prototype.initScene = function()
 {
     // Scene
     this.scene = new THREE.Scene();
+
+    this.scene.add(new THREE.GridHelper(1600, this.thickness));
 
     // Materials
     this.materials =
