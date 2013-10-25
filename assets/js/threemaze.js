@@ -118,7 +118,10 @@ threemaze.prototype.onGenerateMaze = function()
 
     this.map =          new_map;
     this.player.path =  new_player_path;
-    this.initPlayer();
+
+    // Inits player
+    this.player.mazePosition = {x: this.side - 1, z: this.side - 1};
+    this.movePlayer(false);
 };
 
 /**
@@ -143,6 +146,7 @@ threemaze.prototype.removePlayerPath = function(x, y, delay)
 {
     var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 8, mesh: this.player.path[x][y]}).to({scale: 0, y: this.thickness * 5}, 300).delay(delay);
     var self =  this;
+    this.player.path[x][y] = false;
     tween.onUpdate(function()
     {
         this.mesh.scale.set(this.scale, this.scale, this.scale);
@@ -151,7 +155,6 @@ threemaze.prototype.removePlayerPath = function(x, y, delay)
     tween.onComplete(function()
     {
         self.scene.remove(this.mesh);
-        self.player.path[x][y] = false;
     });
     tween.onStart(function()
     {
@@ -214,15 +217,6 @@ threemaze.prototype.initScene = function()
     // Renderer
     this.renderer = typeof WebGLRenderingContext != 'undefined' && window.WebGLRenderingContext ? new THREE.WebGLRenderer({antialias: true}) : new THREE.CanvasRenderer({});
     this.$element.append(this.renderer.domElement);
-};
-
-/**
- * Inits the player
- */
-threemaze.prototype.initPlayer = function()
-{
-    this.player.mazePosition = {x: this.side - 1, z: this.side - 1};
-    this.movePlayer(false);
 };
 
 /**
@@ -293,7 +287,7 @@ threemaze.prototype.onKeyDown = function(evt)
  */
 threemaze.prototype.movePlayer = function(animate)
 {
-    animate = typeof animate == 'undefined' ? true : animate;
+    animate =   typeof animate == 'undefined' ? true : animate;
     var from =  {height: -Math.PI, x: this.player.position.x, z: this.player.position.z, mesh: this.player};
     var to =    {height: Math.PI,x: -((this.side * this.thickness) / 2) + this.player.mazePosition.x * this.thickness, z: -((this.side * this.thickness) / 2) + this.player.mazePosition.z * this.thickness}
     var tween = new TWEEN.Tween(from).to(to, animate ? 300 : 0);
@@ -303,6 +297,14 @@ threemaze.prototype.movePlayer = function(animate)
         this.mesh.position.x = this.x;
         this.mesh.position.y = (Math.cos(this.height) + 1) * (self.thickness / 4);
         this.mesh.position.z = this.z;
+    });
+    // End of the maze: starts again
+    tween.onComplete(function()
+    {
+        if (self.player.mazePosition.x == 2 && self.player.mazePosition.z == 2)
+        {
+            self.onGenerateMaze();
+        }
     });
     tween.start();
 };
