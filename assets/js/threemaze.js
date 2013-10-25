@@ -54,6 +54,7 @@ threemaze.prototype.onGenerateMaze = function()
             if (typeof this.map[x] != 'undefined' && typeof this.map[x][y] != 'undefined' && typeof this.map[x][y] == 'object')
             {
                 var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 2, mesh: this.map[x][y]}).to({scale: 0, y: 0}, 200).delay(delay);
+                var self = this;
                 tween.onUpdate(function()
                 {
                     this.mesh.scale.y =     this.scale;
@@ -70,18 +71,7 @@ threemaze.prototype.onGenerateMaze = function()
             // Removes player path if needed
             if (typeof this.player.path != 'undefined' && typeof this.player.path[x] != 'undefined' && typeof this.player.path[x][y] != 'undefined' && typeof this.player.path[x][y] == 'object')
             {
-                // Builds the related tween
-                var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 8, mesh: this.player.path[x][y]}).to({scale: 0, y: this.thickness * 5}, 300).delay(delay);
-                tween.onUpdate(function()
-                {
-                    this.mesh.scale.set(this.scale, this.scale, this.scale);
-                    this.mesh.position.y =  this.y;
-                });
-                tween.onComplete(function()
-                {
-                    self.scene.remove(this.mesh);
-                });
-                tween.start();
+                this.removePlayerPath(x, y, delay);
             }
 
             // Adds a new mesh if needed
@@ -118,6 +108,29 @@ threemaze.prototype.onGenerateMaze = function()
     this.map = new_map;
     this.player.path = new_player_path;
     this.initPlayer();
+};
+
+/**
+ * Removes a mesh from the player path
+ * @param x
+ * @param y
+ * @param delay
+ */
+threemaze.prototype.removePlayerPath = function(x, y, delay)
+{
+    var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 8, mesh: this.player.path[x][y]}).to({scale: 0, y: this.thickness * 5}, 300).delay(delay);
+    var self =  this;
+    tween.onUpdate(function()
+    {
+        this.mesh.scale.set(this.scale, this.scale, this.scale);
+        this.mesh.position.y =  this.y;
+    });
+    tween.onComplete(function()
+    {
+        self.scene.remove(this.mesh);
+        self.player.path[x][y] = false;
+    });
+    tween.start();
 };
 
 /**
@@ -173,9 +186,7 @@ threemaze.prototype.initScene = function()
     this.scene.add(this.cameraHelper);
     this.cameraHelper.visible =         false;
     this.cameraHelper.targetRotation =  false;
-    this.cameraHelper.rotation.x =      0;
-    this.cameraHelper.rotation.y =      1.362275;
-    this.cameraHelper.rotation.z =      0.694716;
+    this.cameraHelper.rotation.set(0, 1.362275, 0.694716);
 
     // Renderer
     this.renderer = typeof WebGLRenderingContext != 'undefined' && window.WebGLRenderingContext ? new THREE.WebGLRenderer({antialias: true}) : new THREE.CanvasRenderer({});
@@ -184,7 +195,6 @@ threemaze.prototype.initScene = function()
 
 /**
  * Inits the player
- * @todo move the player back to origin when generating a new maze
  */
 threemaze.prototype.initPlayer = function()
 {
@@ -239,8 +249,7 @@ threemaze.prototype.onKeyDown = function(evt)
         // If he goes back, removes one
         else
         {
-            this.scene.remove(this.player.path[x + direction.x][z + direction.z]);
-            this.player.path[x + direction.x][z + direction.z] = false;
+            this.removePlayerPath(x + direction.x, z + direction.z, 0);
         }
 
         // Updates the player position
@@ -325,8 +334,7 @@ threemaze.prototype.render = function()
         this.cameraHelper.rotation.z += (this.cameraHelper.targetRotation.z - this.cameraHelper.rotation.z) / 10;
         this.cameraHelper.rotation.y += (this.cameraHelper.targetRotation.y - this.cameraHelper.rotation.y) / 10;
     }
-    var camera_position = this.cameraHelper.geometry.vertices[1].clone().applyProjection(this.cameraHelper.matrixWorld);
-    this.camera.position = camera_position;
+    this.camera.position = this.cameraHelper.geometry.vertices[1].clone().applyProjection(this.cameraHelper.matrixWorld);
     this.camera.lookAt(this.scene.position);
     this.renderer.render(this.scene, this.camera);
 };
