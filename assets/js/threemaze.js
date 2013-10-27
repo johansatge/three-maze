@@ -183,8 +183,8 @@ threemaze.prototype.initScene = function()
     this.camera.clicked =    false;
 
     // Lights
-    this.scene.add(new THREE.AmbientLight(0x999999));
-    var directional = new THREE.DirectionalLight(0xffffff, 0.5);
+    this.scene.add(new THREE.AmbientLight(0xc9c9c9));
+    var directional = new THREE.DirectionalLight(0xc9c9c9, 0.5);
     directional.position.set(0, 0.5, 1);
     this.scene.add(directional);
 
