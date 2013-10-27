@@ -4,7 +4,7 @@
  * Raw copy paste from http://www.roguebasin.roguelikedevelopment.org/index.php?title=Simple_maze#Maze_Generator_in_Javascript
  * @param size
  */
-threemaze.prototype.generateMaze = function(size)
+ThreeMaze.prototype.generateMaze = function(size)
 {
     var cN = [[0,0],[0,0],[0,0],[0,0]];
     var cx;

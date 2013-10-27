@@ -3,7 +3,7 @@
  * Maze class
  * @param $element
  */
-function threemaze($element)
+function ThreeMaze($element)
 {
     // Object attributes
     this.$element =         $element;
@@ -36,7 +36,7 @@ function threemaze($element)
  * Generates a new maze
  * Loops into the maze, removes old blocks and adds new ones
  */
-threemaze.prototype.onGenerateMaze = function()
+ThreeMaze.prototype.onGenerateMaze = function()
 {
     var new_map =           this.generateMaze(this.side);
     var new_player_path =   [];
@@ -130,7 +130,7 @@ threemaze.prototype.onGenerateMaze = function()
  * @param y
  * @param delay
  */
-threemaze.prototype.onUpdateTweeningMesh = function()
+ThreeMaze.prototype.onUpdateTweeningMesh = function()
 {
     this.mesh.scale.y =     this.scale;
     this.mesh.position.y =  this.y;
@@ -142,7 +142,7 @@ threemaze.prototype.onUpdateTweeningMesh = function()
  * @param y
  * @param delay
  */
-threemaze.prototype.removePlayerPath = function(x, y, delay)
+ThreeMaze.prototype.removePlayerPath = function(x, y, delay)
 {
     var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 8, mesh: this.player.path[x][y]}).to({scale: 0, y: this.thickness * 5}, 300).delay(delay);
     var self =  this;
@@ -166,7 +166,7 @@ threemaze.prototype.removePlayerPath = function(x, y, delay)
 /**
  * Inits the scene
  */
-threemaze.prototype.initScene = function()
+ThreeMaze.prototype.initScene = function()
 {
     // Scene
     this.scene = new THREE.Scene();
@@ -223,7 +223,7 @@ threemaze.prototype.initScene = function()
  * Keydown action
  * @param evt
  */
-threemaze.prototype.onKeyDown = function(evt)
+ThreeMaze.prototype.onKeyDown = function(evt)
 {
     // Gets the direction depending on the pressed key
     var code =      evt.keyCode;
@@ -285,7 +285,7 @@ threemaze.prototype.onKeyDown = function(evt)
  * Moves the player depending on its position on the maze
  * @param animate
  */
-threemaze.prototype.movePlayer = function(animate)
+ThreeMaze.prototype.movePlayer = function(animate)
 {
     animate =   typeof animate == 'undefined' ? true : animate;
     var from =  {height: -Math.PI, x: this.player.position.x, z: this.player.position.z, mesh: this.player};
@@ -313,7 +313,7 @@ threemaze.prototype.movePlayer = function(animate)
  * Moving the mouse over the container: sets a target rotation for the camera helper
  * @param evt
  */
-threemaze.prototype.onMouseMove = function(evt)
+ThreeMaze.prototype.onMouseMove = function(evt)
 {
     if (this.camera.clicked !== false)
     {
@@ -334,7 +334,7 @@ threemaze.prototype.onMouseMove = function(evt)
  * Mouse down: starts dragging the maze
  * @param evt
  */
-threemaze.prototype.onMouseDown = function(evt)
+ThreeMaze.prototype.onMouseDown = function(evt)
 {
     evt.preventDefault();
     this.camera.clicked = {x: evt.pageX, y: evt.pageY};
@@ -344,7 +344,7 @@ threemaze.prototype.onMouseDown = function(evt)
  * Mouse up: stops dragging the maze
  * @param evt
  */
-threemaze.prototype.onMouseUp = function(evt)
+ThreeMaze.prototype.onMouseUp = function(evt)
 {
     evt.preventDefault();
     this.camera.clicked = false;
@@ -354,7 +354,7 @@ threemaze.prototype.onMouseUp = function(evt)
  * Render loop
  * Sets the camera position and renders the scene
  */
-threemaze.prototype.render = function()
+ThreeMaze.prototype.render = function()
 {
     requestAnimationFrame($.proxy(this, 'render'));
     TWEEN.update();
@@ -371,7 +371,7 @@ threemaze.prototype.render = function()
 /**
  * Sets the scene dimensions on window resize
  */
-threemaze.prototype.onWindowResize = function()
+ThreeMaze.prototype.onWindowResize = function()
 {
     var $window = $(window);
     this.renderer.setSize($window.width(), $window.height());
