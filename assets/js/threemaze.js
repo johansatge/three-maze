@@ -175,7 +175,7 @@ ThreeMaze.prototype.initScene = function()
     this.materials =
     {
         grey:   new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false}),
-        red:    new THREE.MeshLambertMaterial({color: 0xcb4e4e, ambient: 0xcb4e4e, lineWidth: 1})
+        red:    new THREE.MeshLambertMaterial({color: 0xf18260, ambient: 0xf18260, lineWidth: 1})
     };
 
     // Camera

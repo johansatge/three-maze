@@ -5,11 +5,12 @@ html, body, div, button {
 }
 
 html, body {
-    background: #435A6B;
+    background: #252E33;
     width: 100%;
     height: 100%;
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Source Sans Pro', sans-serif;
     font-weight: 300;
+    font-size: 18px;
 }
 
 .three {
@@ -26,54 +27,52 @@ html, body {
     width: 100%;
     top: 0;
     height: 115px;
-    background: #4b6578;
+    background: #1c2327;
 }
 
 button {
     position: relative;
     width: 220px;
+    font-weight: 300;
     height: 50px;
+    font-size: 18px;
     left: 50%;
     z-index: 2;
     margin: 30px 0 0 -110px;
     border: 0;
-    background: #374b5b;
+    background: #f18260;
     color: #ffffff;
-    font-family: 'Quicksand', sans-serif;
-    font-size: 22px;
-    font-weight: 400;
     cursor: pointer;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
     outline: 0;
-    box-shadow: 0 5px #2a3a46;
+    box-shadow: 0 5px #c56b4f;
 }
 
 button:hover {
     margin-top: 31px;
-    box-shadow: 0 4px #2a3a46;
+    box-shadow: 0 4px #c56b4f;
 }
 
 button:active {
     margin-top: 33px;
-    box-shadow: 0 2px #2a3a46;
+    box-shadow: 0 2px #c56b4f;
 }
 
 .caption {
     z-index: 3;
     position: absolute;
     bottom: 0;
-    color: #ffffff;
-    font-size: 20px;
+    color: #808080;
     width: 100%;
     padding: 30px 0 30px 0;
     text-align: center;
-    background: #4b6578;
+    background: #1c2327;
 }
 
 a, a:visited {
-    color: #7ca5c3;
+    color: #c56b4f;
     text-decoration: none;
 }
 
