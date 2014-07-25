@@ -7,4 +7,4 @@ Creation of 3D random mazes using [three.js](http://threejs.org/) and [tween.js]
 
 **[See demo](http://johansatge.github.io/three-maze/)** (tested on Safari, Chrome and Firefox with WebGL enabled)
 
-![Screen capture](https://raw.github.com/johansatge/three-maze/master/screenshot.png)
+![Screen capture](https://raw.github.com/johansatge/three-maze/master/assets/css/images/screenshot.png)
