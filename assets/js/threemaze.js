@@ -284,7 +284,7 @@ ThreeMaze.prototype.onKeyDown = function(evt)
         this.player.mazePosition.x += direction.x;
         this.player.mazePosition.z += direction.z;
 
-        this.movePlayer();
+        this.movePlayer(true);
     }
 };
 
@@ -294,7 +294,6 @@ ThreeMaze.prototype.onKeyDown = function(evt)
  */
 ThreeMaze.prototype.movePlayer = function(animate)
 {
-    animate = typeof animate === 'undefined' ? true : animate;
     var from = {height: -Math.PI, x: this.player.position.x, z: this.player.position.z, mesh: this.player};
     var to = {
         height: Math.PI,
