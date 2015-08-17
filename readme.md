@@ -10,7 +10,6 @@ This project is released under the [MIT License](LICENSE).
 
 ## Credits
 
-* [jQuery](http://jquery.com/)
 * [three.js](http://threejs.org/)
 * [tween.js](http://github.com/sole/tween.js)
 * [Roguebasin](http://www.roguebasin.com/index.php?title=Simple_maze#Maze_Generator_in_Javascript) (maze generation)
