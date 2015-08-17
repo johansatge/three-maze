@@ -1,11 +1,12 @@
 /**
  * Maze class
- * @param $element
+ * @param wrapper
+ * @param button
  */
-function ThreeMaze($element)
+function ThreeMaze(wrapper, button)
 {
     // Object attributes
-    this.$element = $element;
+    this.wrapper = wrapper;
     this.camera = {};
     this.cameraHelper = {};
     this.scene = {};
@@ -23,12 +24,13 @@ function ThreeMaze($element)
     this.render();
 
     // Events
-    this.$element.on('mousemove', $.proxy(this, 'onMouseMove'));
-    this.$element.on('mousedown', $.proxy(this, 'onMouseDown'));
-    this.$element.on('mouseup', $.proxy(this, 'onMouseUp'));
-    this.$element.find('.generate').on('click', $.proxy(this, 'onGenerateMaze')).trigger('click');
-    $(window).on('resize', $.proxy(this, 'onWindowResize'));
-    $(document).on('keydown', $.proxy(this, 'onKeyDown'));
+    this.wrapper.addEventListener('mousemove', this.onMouseMove.bind(this));
+    this.wrapper.addEventListener('mousedown', this.onMouseDown.bind(this));
+    this.wrapper.addEventListener('mouseup', this.onMouseUp.bind(this));
+    button.addEventListener('click', this.onGenerateMaze.bind(this));
+    button.dispatchEvent(new Event('click'));
+    window.addEventListener('resize', this.onWindowResize.bind(this));
+    document.addEventListener('keydown', this.onKeyDown.bind(this));
 };
 
 /**
@@ -52,9 +54,9 @@ ThreeMaze.prototype.onGenerateMaze = function()
             new_player_path[x][y] = false;
 
             // Removes old mesh if needed
-            if (typeof this.map[x] != 'undefined' && typeof this.map[x][y] != 'undefined' && typeof this.map[x][y] == 'object')
+            if (typeof this.map[x] != 'undefined' && typeof this.map[x][y] != 'undefined' && typeof this.map[x][y] === 'object')
             {
-                var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 2, mesh: this.map[x][y]}).to({scale: 0, y: 0}, 200).delay(delay);
+                tween = new TWEEN.Tween({scale: 1, y: this.thickness / 2, mesh: this.map[x][y]}).to({scale: 0, y: 0}, 200).delay(delay);
                 tween.onUpdate(this.onUpdateTweeningMesh);
                 tween.onComplete(function()
                 {
@@ -65,13 +67,13 @@ ThreeMaze.prototype.onGenerateMaze = function()
             }
 
             // Removes player path if needed
-            if (typeof this.player.path != 'undefined' && typeof this.player.path[x] != 'undefined' && typeof this.player.path[x][y] != 'undefined' && typeof this.player.path[x][y] == 'object')
+            if (typeof this.player.path != 'undefined' && typeof this.player.path[x] != 'undefined' && typeof this.player.path[x][y] != 'undefined' && typeof this.player.path[x][y] === 'object')
             {
                 this.removePlayerPath(x, y, delay);
             }
 
             // Adds a new mesh if needed
-            if (new_map[x][y] == 0)
+            if (new_map[x][y] === 0)
             {
                 // Generates the mesh
                 var wall_geometry = new THREE.CubeGeometry(this.thickness, this.thickness, this.thickness, 1, 1, 1);
@@ -128,9 +130,6 @@ ThreeMaze.prototype.onGenerateMaze = function()
 
 /**
  * Updates a mesh when doing a tween
- * @param x
- * @param y
- * @param delay
  */
 ThreeMaze.prototype.onUpdateTweeningMesh = function()
 {
@@ -221,7 +220,7 @@ ThreeMaze.prototype.initScene = function()
 
     // Renderer
     this.renderer = typeof WebGLRenderingContext != 'undefined' && window.WebGLRenderingContext ? new THREE.WebGLRenderer({antialias: true}) : new THREE.CanvasRenderer({});
-    this.$element.append(this.renderer.domElement);
+    this.wrapper.appendChild(this.renderer.domElement);
 };
 
 /**
@@ -295,7 +294,7 @@ ThreeMaze.prototype.onKeyDown = function(evt)
  */
 ThreeMaze.prototype.movePlayer = function(animate)
 {
-    animate = typeof animate == 'undefined' ? true : animate;
+    animate = typeof animate === 'undefined' ? true : animate;
     var from = {height: -Math.PI, x: this.player.position.x, z: this.player.position.z, mesh: this.player};
     var to = {
         height: Math.PI,
@@ -313,7 +312,7 @@ ThreeMaze.prototype.movePlayer = function(animate)
     // End of the maze: starts again
     tween.onComplete(function()
     {
-        if (self.player.mazePosition.x == 2 && self.player.mazePosition.z == 2)
+        if (self.player.mazePosition.x === 2 && self.player.mazePosition.z === 2)
         {
             self.onGenerateMaze();
         }
@@ -371,7 +370,7 @@ ThreeMaze.prototype.onMouseUp = function(evt)
  */
 ThreeMaze.prototype.render = function()
 {
-    requestAnimationFrame($.proxy(this, 'render'));
+    requestAnimationFrame(this.render.bind(this));
     TWEEN.update();
     if (this.cameraHelper.targetRotation !== false)
     {
@@ -388,8 +387,9 @@ ThreeMaze.prototype.render = function()
  */
 ThreeMaze.prototype.onWindowResize = function()
 {
-    var $window = $(window);
-    this.renderer.setSize($window.width(), $window.height());
-    this.camera.aspect = $window.width() / $window.height();
+    var width = window.innerWidth || window.document.body.clientWidth;
+    var height = window.innerHeight || window.document.body.clientHeight;
+    this.renderer.setSize(width, height);
+    this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
 };

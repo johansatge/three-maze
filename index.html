@@ -26,16 +26,17 @@
             Random mazes with <a href="http://threejs.org/">three.js</a> and <a href="https://github.com/sole/tween.js/">tween.js</a><br />
             Use <strong>arrow keys</strong> to move, and the <strong>mouse</strong> to rotate the view
         </div>
-        <script type="text/javascript" src="//code.jquery.com/jquery-1.8.0.min.js"></script>
         <script type="text/javascript" src="assets/js/libs/three.min.js"></script>
         <script type="text/javascript" src="assets/js/libs/tween.min.js"></script>
         <script type="text/javascript" src="assets/js/threemaze.js"></script>
         <script type="text/javascript" src="assets/js/threemaze.generate.js"></script>
         <script type="text/javascript">
-            jQuery(window).load(function()
+            window.onload = function()
             {
-                new ThreeMaze($('.three').first());
-            });
+                var wrapper = document.querySelector('.three');
+                var button = document.querySelector('.generate');
+                new ThreeMaze(wrapper, button);
+            }
         </script>
 	</body>
 </html>
