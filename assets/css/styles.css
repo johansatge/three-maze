@@ -94,15 +94,3 @@ strong
 {
     font-weight : 400;
 }
-
-.fork-me
-{
-    position   : absolute;
-    z-index    : 3;
-    display    : block;
-    width      : 141px;
-    height     : 141px;
-    top        : 0;
-    right      : 0;
-    background : url(images/fork-me.png) no-repeat 0 0;
-}

@@ -15,7 +15,6 @@
         </script>
     </head>
 	<body>
-    <a class="fork-me" href="https://github.com/johansatge/three-maze"></a>
         <div class="three">
             <div class="button-wrapper">
                 <button class="generate">
@@ -24,7 +23,7 @@
             </div>
         </div>
         <div class="caption">
-            Random mazes using <a href="http://threejs.org/">three.js</a> and <a href="https://github.com/sole/tween.js/">tween.js</a><br />
+            Random mazes with <a href="http://threejs.org/">three.js</a> and <a href="https://github.com/sole/tween.js/">tween.js</a><br />
             Use <strong>arrow keys</strong> to move, and the <strong>mouse</strong> to rotate the view
         </div>
         <script type="text/javascript" src="//code.jquery.com/jquery-1.8.0.min.js"></script>
@@ -35,7 +34,7 @@
         <script type="text/javascript">
             jQuery(window).load(function()
             {
-                var contraption = new ThreeMaze($('.three').first());
+                new ThreeMaze($('.three').first());
             });
         </script>
 	</body>

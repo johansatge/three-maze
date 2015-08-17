@@ -1,4 +1,3 @@
-
 /**
  * Maze class
  * @param $element
@@ -6,17 +5,17 @@
 function ThreeMaze($element)
 {
     // Object attributes
-    this.$element =         $element;
-    this.camera =           {};
-    this.cameraHelper =     {};
-    this.scene =            {};
-    this.materials =        {};
-    this.map =              [];
-    this.renderer =         {};
-    this.player =           {};
-    this.end =              {};
-    this.side =             31;
-    this.thickness =        20;
+    this.$element = $element;
+    this.camera = {};
+    this.cameraHelper = {};
+    this.scene = {};
+    this.materials = {};
+    this.map = [];
+    this.renderer = {};
+    this.player = {};
+    this.end = {};
+    this.side = 31;
+    this.thickness = 20;
 
     // Inits
     this.initScene();
@@ -24,7 +23,7 @@ function ThreeMaze($element)
     this.render();
 
     // Events
-    this.$element.on('mousemove', $.proxy(this,'onMouseMove'));
+    this.$element.on('mousemove', $.proxy(this, 'onMouseMove'));
     this.$element.on('mousedown', $.proxy(this, 'onMouseDown'));
     this.$element.on('mouseup', $.proxy(this, 'onMouseUp'));
     this.$element.find('.generate').on('click', $.proxy(this, 'onGenerateMaze')).trigger('click');
@@ -38,14 +37,15 @@ function ThreeMaze($element)
  */
 ThreeMaze.prototype.onGenerateMaze = function()
 {
-    var new_map =           this.generateMaze(this.side);
-    var new_player_path =   [];
-    var latency =           50;
-    var self =              this;
+    var new_map = this.generateMaze(this.side);
+    var new_player_path = [];
+    var latency = 50;
+    var self = this;
+    var tween = null;
     for (var x = this.side; x > 0; x -= 1)
     {
         new_player_path[x] = [];
-        for (var y = 1;y < this.side + 1; y += 1)
+        for (var y = 1; y < this.side + 1; y += 1)
         {
             var delay = ((this.side - x) * latency) + ((this.side - y) * latency);
             // Inits player path
@@ -55,7 +55,6 @@ ThreeMaze.prototype.onGenerateMaze = function()
             if (typeof this.map[x] != 'undefined' && typeof this.map[x][y] != 'undefined' && typeof this.map[x][y] == 'object')
             {
                 var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 2, mesh: this.map[x][y]}).to({scale: 0, y: 0}, 200).delay(delay);
-                var self = this;
                 tween.onUpdate(this.onUpdateTweeningMesh);
                 tween.onComplete(function()
                 {
@@ -75,14 +74,14 @@ ThreeMaze.prototype.onGenerateMaze = function()
             if (new_map[x][y] == 0)
             {
                 // Generates the mesh
-                var wall_geometry =     new THREE.CubeGeometry(this.thickness, this.thickness, this.thickness, 1, 1, 1);
-                new_map[x][y] =         new THREE.Mesh(wall_geometry, this.materials.grey);
+                var wall_geometry = new THREE.CubeGeometry(this.thickness, this.thickness, this.thickness, 1, 1, 1);
+                new_map[x][y] = new THREE.Mesh(wall_geometry, this.materials.grey);
                 new_map[x][y].visible = false;
                 new_map[x][y].position.set(x * this.thickness - ((this.side * this.thickness) / 2), 0, y * 20 - ((this.side * this.thickness) / 2));
                 this.scene.add(new_map[x][y]);
 
                 // Builds the related tween
-                var tween = new TWEEN.Tween({scale: 0, y: 0, mesh: new_map[x][y]}).to({scale: 1, y: this.thickness / 2}, 300).delay(delay);
+                tween = new TWEEN.Tween({scale: 0, y: 0, mesh: new_map[x][y]}).to({scale: 1, y: this.thickness / 2}, 300).delay(delay);
                 tween.onUpdate(this.onUpdateTweeningMesh);
                 tween.onStart(function()
                 {
@@ -99,7 +98,10 @@ ThreeMaze.prototype.onGenerateMaze = function()
 
     // Animates the end block
     var end_hide_tween = new TWEEN.Tween({scale: 1, y: this.thickness / 2, mesh: this.end}).to({scale: 0, y: 0}, 300);
-    var end_show_tween = new TWEEN.Tween({scale: 0, y: 0, mesh: this.end}).to({scale: 1, y: this.thickness / 2}, 300).delay((this.side * 2) * latency);
+    var end_show_tween = new TWEEN.Tween({scale: 0, y: 0, mesh: this.end}).to({
+        scale: 1,
+        y: this.thickness / 2
+    }, 300).delay((this.side * 2) * latency);
     end_hide_tween.onUpdate(this.onUpdateTweeningMesh);
     end_show_tween.onUpdate(this.onUpdateTweeningMesh);
     end_show_tween.onStart(function()
@@ -116,8 +118,8 @@ ThreeMaze.prototype.onGenerateMaze = function()
     }
     end_show_tween.start();
 
-    this.map =          new_map;
-    this.player.path =  new_player_path;
+    this.map = new_map;
+    this.player.path = new_player_path;
 
     // Inits player
     this.player.mazePosition = {x: this.side - 1, z: this.side - 1};
@@ -132,8 +134,8 @@ ThreeMaze.prototype.onGenerateMaze = function()
  */
 ThreeMaze.prototype.onUpdateTweeningMesh = function()
 {
-    this.mesh.scale.y =     this.scale;
-    this.mesh.position.y =  this.y;
+    this.mesh.scale.y = this.scale;
+    this.mesh.position.y = this.y;
 };
 
 /**
@@ -144,8 +146,11 @@ ThreeMaze.prototype.onUpdateTweeningMesh = function()
  */
 ThreeMaze.prototype.removePlayerPath = function(x, y, delay)
 {
-    var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 8, mesh: this.player.path[x][y]}).to({scale: 0, y: this.thickness * 5}, 300).delay(delay);
-    var self =  this;
+    var tween = new TWEEN.Tween({scale: 1, y: this.thickness / 8, mesh: this.player.path[x][y]}).to({
+        scale: 0,
+        y: this.thickness * 5
+    }, 300).delay(delay);
+    var self = this;
     this.player.path[x][y] = false;
     tween.onUpdate(function()
     {
@@ -174,13 +179,13 @@ ThreeMaze.prototype.initScene = function()
     // Materials
     this.materials =
     {
-        grey:   new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false}),
-        red:    new THREE.MeshLambertMaterial({color: 0xf18260, ambient: 0xf18260, lineWidth: 1})
+        grey: new THREE.MeshLambertMaterial({color: 0xffffff, wireframe: false}),
+        red: new THREE.MeshLambertMaterial({color: 0xf18260, ambient: 0xf18260, lineWidth: 1})
     };
 
     // Camera
-    this.camera =            new THREE.PerspectiveCamera(45, 1, 1, 2000);
-    this.camera.clicked =    false;
+    this.camera = new THREE.PerspectiveCamera(45, 1, 1, 2000);
+    this.camera.clicked = false;
 
     // Lights
     this.scene.add(new THREE.AmbientLight(0xc9c9c9));
@@ -189,9 +194,9 @@ ThreeMaze.prototype.initScene = function()
     this.scene.add(directional);
 
     // Player
-    this.player =      new THREE.Object3D();
-    var head_mesh =    new THREE.Mesh(new THREE.SphereGeometry(this.thickness / 2, 9, 9), this.materials.red);
-    var body_mesh =    new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 2, this.thickness * 1.5, 12, 1), this.materials.red);
+    this.player = new THREE.Object3D();
+    var head_mesh = new THREE.Mesh(new THREE.SphereGeometry(this.thickness / 2, 9, 9), this.materials.red);
+    var body_mesh = new THREE.Mesh(new THREE.CylinderGeometry(this.thickness / 6, this.thickness / 2, this.thickness * 1.5, 12, 1), this.materials.red);
     this.player.add(head_mesh);
     this.player.add(body_mesh);
     head_mesh.position.y = this.thickness * 1.5;
@@ -206,12 +211,12 @@ ThreeMaze.prototype.initScene = function()
     this.scene.add(this.end);
 
     // Camera helper
-    var geometry =  new THREE.Geometry();
+    var geometry = new THREE.Geometry();
     geometry.vertices.push(new THREE.Vector3(0, 0, 0), new THREE.Vector3(Math.sqrt(3) * (this.side * this.thickness)), 0, 0);
     this.cameraHelper = new THREE.Line(geometry);
     this.scene.add(this.cameraHelper);
-    this.cameraHelper.visible =         false;
-    this.cameraHelper.targetRotation =  false;
+    this.cameraHelper.visible = false;
+    this.cameraHelper.targetRotation = false;
     this.cameraHelper.rotation.set(0, 1.362275, 0.694716);
 
     // Renderer
@@ -226,7 +231,7 @@ ThreeMaze.prototype.initScene = function()
 ThreeMaze.prototype.onKeyDown = function(evt)
 {
     // Gets the direction depending on the pressed key
-    var code =      evt.keyCode;
+    var code = evt.keyCode;
     var direction = {x: 0, z: 0};
     var directions =
     {
@@ -253,17 +258,20 @@ ThreeMaze.prototype.onKeyDown = function(evt)
         if (this.player.path[x + direction.x][z + direction.z] === false)
         {
             // Builds the mesh
-            this.player.path[x][z] = new THREE.Mesh(new THREE.CubeGeometry(this.thickness, this.thickness / 4, this.thickness, 1, 1, 1),  this.materials.red);
+            this.player.path[x][z] = new THREE.Mesh(new THREE.CubeGeometry(this.thickness, this.thickness / 4, this.thickness, 1, 1, 1), this.materials.red);
             this.player.path[x][z].position.set(-((this.side * this.thickness) / 2) + x * this.thickness, this.thickness * 5, -((this.side * this.thickness) / 2) + z * this.thickness);
             this.player.path[x][z].scale.set(0, 0, 0);
             this.scene.add(this.player.path[x][z]);
 
             // Builds the related tween
-            var tween = new TWEEN.Tween({scale: 0, y: this.thickness * 5, mesh: this.player.path[x][z]}).to({scale: 1, y: this.thickness / 8}, 300).delay(150);
+            var tween = new TWEEN.Tween({scale: 0, y: this.thickness * 5, mesh: this.player.path[x][z]}).to({
+                scale: 1,
+                y: this.thickness / 8
+            }, 300).delay(150);
             tween.onUpdate(function()
             {
                 this.mesh.scale.set(this.scale, this.scale, this.scale);
-                this.mesh.position.y =  this.y;
+                this.mesh.position.y = this.y;
             });
             tween.start();
         }
@@ -287,11 +295,15 @@ ThreeMaze.prototype.onKeyDown = function(evt)
  */
 ThreeMaze.prototype.movePlayer = function(animate)
 {
-    animate =   typeof animate == 'undefined' ? true : animate;
-    var from =  {height: -Math.PI, x: this.player.position.x, z: this.player.position.z, mesh: this.player};
-    var to =    {height: Math.PI,x: -((this.side * this.thickness) / 2) + this.player.mazePosition.x * this.thickness, z: -((this.side * this.thickness) / 2) + this.player.mazePosition.z * this.thickness}
+    animate = typeof animate == 'undefined' ? true : animate;
+    var from = {height: -Math.PI, x: this.player.position.x, z: this.player.position.z, mesh: this.player};
+    var to = {
+        height: Math.PI,
+        x: -((this.side * this.thickness) / 2) + this.player.mazePosition.x * this.thickness,
+        z: -((this.side * this.thickness) / 2) + this.player.mazePosition.z * this.thickness
+    };
     var tween = new TWEEN.Tween(from).to(to, animate ? 300 : 0);
-    var self =  this;
+    var self = this;
     tween.onUpdate(function()
     {
         this.mesh.position.x = this.x;
@@ -317,7 +329,10 @@ ThreeMaze.prototype.onMouseMove = function(evt)
 {
     if (this.camera.clicked !== false)
     {
-        var target_rotation = {z: this.cameraHelper.rotation.z + ((evt.pageY - this.camera.clicked.y) / 800), y: this.cameraHelper.rotation.y + ((this.camera.clicked.x - evt.pageX) / 800)};
+        var target_rotation = {
+            z: this.cameraHelper.rotation.z + ((evt.pageY - this.camera.clicked.y) / 800),
+            y: this.cameraHelper.rotation.y + ((this.camera.clicked.x - evt.pageX) / 800)
+        };
         if (target_rotation.z < 0)
         {
             target_rotation.z = 0;
