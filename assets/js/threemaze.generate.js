@@ -1,7 +1,7 @@
 
 /**
  * Generates a maze
- * Raw copy paste from http://www.roguebasin.roguelikedevelopment.org/index.php?title=Simple_maze#Maze_Generator_in_Javascript
+ * Refactored paste from http://www.roguebasin.roguelikedevelopment.org/index.php?title=Simple_maze#Maze_Generator_in_Javascript
  * @param size
  */
 ThreeMaze.prototype.generateMaze = function(size)
